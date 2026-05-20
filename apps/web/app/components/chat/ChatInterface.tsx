@@ -15,16 +15,13 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
   const [selectedModel, setSelectedModel] = useState(
     "google/gemini-2.5-flash-lite",
   );
-  const [userInput, setUserInput] = useState('');
   const selectedModelRef = useRef(selectedModel);
   const lastAssistantSnippetRef = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const userInputRef = useRef(userInput);
-  userInputRef.current = userInput;
-
-  const chatIdRef = useRef(chatId);
-  chatIdRef.current = chatId;
+  const userInput = useChatStore(
+    (s) => s.drafts[chatId]?.value ?? ''
+  );
 
   selectedModelRef.current = selectedModel;
 
@@ -64,20 +61,6 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
     },
   });
 
-  // // TODO: consider get rid of effect and directly update drafts on change
-  // useEffect(() => {
-  //   return () => {
-  //     const value = userInputRef.current;
-  //     const chatId = chatIdRef.current;
-
-  //     if (value.trim()) return;
-
-  //     if (value) {
-  //       useChatStore.getState().upsertDraft(chatId, { value, commited: true });
-  //     }
-  //   }
-  // }, []);
-
   const scrollToBottom = () => {
     const el = bottomRef.current;
     if (!el) return;
@@ -89,12 +72,6 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
 
   useLayoutEffect(scrollToBottom, [chatId]);
   useLayoutEffect(scrollToBottom, [messages]);
-
-  useEffect(() => {
-    const draft = useChatStore.getState().drafts[chatId]?.value ?? '';
-
-    setUserInput(draft);
-  }, [chatId]);
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -123,7 +100,10 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
       snippetRole: "user",
     });
 
-    setUserInput('');
+    useChatStore.getState().upsertDraft(chatId, {
+      value: '',
+      committed: false,
+    })
 
     await sendMessage({ text });
   };
@@ -153,7 +133,13 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
 
       <ChatInput
         value={userInput}
-        onChange={setUserInput}
+        onChange={(value) => {
+          useChatStore.getState().upsertDraft(chatId, { value })
+
+          if (value === '') {
+            useChatStore.getState().upsertDraft(chatId, { committed: false })
+          }
+        }}
         onSubmit={handleSubmit}
         disabled={status !== "ready"}
       />

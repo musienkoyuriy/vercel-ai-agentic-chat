@@ -1,9 +1,11 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, } from "react";
 import { Chat, useChatStore } from "../../chat.store";
 import { ChatPreview } from "./ChatPreview";
+
+const EMPTY_DRAFT = { value: '', committed: false };
 
 export function ChatSidebar() {
   const router = useRouter();
@@ -11,6 +13,7 @@ export function ChatSidebar() {
 
   const chats = useChatStore((store) => store.chats);
   const setChats = useChatStore((store) => store.setChats);
+  const upsertDraft = useChatStore((store) => store.upsertDraft);
   const setActiveChatId = useChatStore((store) => store.setActiveChatId);
 
   const fetchChats = useCallback(async () => {
@@ -41,6 +44,12 @@ export function ChatSidebar() {
   const drafts = useChatStore((store) => store.drafts);
 
   const onPreviewClick = (chat: Chat) => {
+    const previousChatDraft = drafts[currentChatId!]
+
+    if (previousChatDraft?.value) {
+      upsertDraft(currentChatId!, { committed: true })
+    }
+
     setActiveChatId(chat.id);
     router.push(`/chat/${chat.id}`);
   }
@@ -67,7 +76,7 @@ export function ChatSidebar() {
               <ChatPreview
                 key={chat.id}
                 chat={chat}
-                draft={drafts[chat.id]?.value ?? ''}
+                draft={drafts[chat.id] ?? EMPTY_DRAFT}
                 currentChatId={currentChatId}
                 onPreviewClick={() => onPreviewClick(chat)}
               />

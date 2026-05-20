@@ -5,7 +5,7 @@ import { Chat } from "../../chat.store";
 export interface ChatPreviewProps {
   chat: Chat;
   currentChatId: string | null | undefined;
-  draft: string;
+  draft: { value: string; committed: boolean };
   onPreviewClick: () => void;
 }
 
@@ -27,16 +27,16 @@ export function ChatPreview({
       {chat.title && (
         <div className="font-semibold truncate mb-1">{chat.title}</div>
       )}
-      {!draft && (
+      {!draft.committed && (
         <div className="text-xs font-semibold truncate mb-1">
           {chat.snippetRole === "user" ? "You" : "Assistant"}
         </div>
       )}
-      {draft && <div className="truncate">
+      {(draft.committed) && <div className="truncate">
         <span className="text-red-400">Draft:</span>
-        <span className=" pl-1.5">{draft}</span>
+        <span className=" pl-1.5">{draft.value}</span>
       </div>}
-      {!draft && <div className="text-sm truncate mb-1">{chat.snippet}</div>}
+      {!draft.committed && <div className="text-sm truncate mb-1">{chat.snippet}</div>}
       <div className="text-xs text-gray-500">
         {new Date(chat.updatedAt).toLocaleDateString()}
       </div>

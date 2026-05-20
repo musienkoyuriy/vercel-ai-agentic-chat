@@ -1,6 +1,6 @@
 'use client';
 
-import { ChatSidebar } from "./components/ChatSidebar";
+import { ChatSidebar } from "./components/sidebar/ChatSidebar";
 
 export default function Home() {
   return (
