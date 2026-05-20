@@ -26,6 +26,7 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
   selectedModelRef.current = selectedModel;
 
   const upsertChat = useChatStore((store) => store.upsertChat);
+  const upsertDraft = useChatStore((store) => store.upsertDraft);
 
   const { messages, sendMessage, setMessages, status } = useChat({
     id: chatId,
@@ -134,10 +135,10 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
       <ChatInput
         value={userInput}
         onChange={(value) => {
-          useChatStore.getState().upsertDraft(chatId, { value })
+          upsertDraft(chatId, { value });
 
           if (value === '') {
-            useChatStore.getState().upsertDraft(chatId, { committed: false })
+            upsertDraft(chatId, { committed: false });
           }
         }}
         onSubmit={handleSubmit}
